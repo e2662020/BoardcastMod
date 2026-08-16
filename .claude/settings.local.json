@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(javap -p -classpath . me.shedaniel.clothconfig2.api.ConfigEntryBuilder)"
+    ]
+  }
+}
