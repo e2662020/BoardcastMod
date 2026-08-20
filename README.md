@@ -1,108 +1,104 @@
 # BoardcastMod
 
-A client-side Fabric mod for **Minecraft 1.21**. It combines the useful parts of
-Scoreboard Helper, Scoreboard Overhaul, OBS Overlay and a chat-regex logger into
-one configurable mod.
+一个面向 **Minecraft 1.21** 的 Fabric 客户端模组。它把 Scoreboard Helper、
+Scoreboard Overhaul、OBS Overlay 以及聊天正则记录器中最实用的部分，合并成一个
+可配置的模组。
 
-## Features
+## 功能
 
-1. **Real-time scoreboard CSV export**
-   - Polls the scoreboard every tick by default and performs an atomic file
-     rewrite as soon as any objective/holder/score changes.
-   - Exports **all objectives and all score holders**, not only the sidebar.
-   - Full CSV columns: `objective, objective_display, holder,
-     holder_display, score, criterion, render_type, score_display[,
-     timestamp]`.
-   - Also writes a minimal Scoreboard Helper style CSV
-     (`objective,holder,score`) to
-     `.minecraft/config/boardcastmod/scoreboard_helper.csv`.
-   - Default full output: `.minecraft/config/boardcastmod/scoreboard.csv`.
-   - Force an immediate export with `/boardcastmod export`.
+1. **实时比分板 CSV 导出（Scoreboard Helper 格式）**
+   - 默认每个刻轮询一次，一旦计分项 / 持有者 / 分数发生变化，立即以原子方式重写文件。
+   - 将一份 Scoreboard Helper 风格的 CSV（`Player,Score`）写入
+     `.minecraft/config/boardcastmod/scoreboard_helper.csv`。
+   - 行始终来自**侧边栏计分项**（`Score` 列）。
+   - **从其他计分项追加列**：在设置里勾选当前世界中实时采集到的计分项
+     （需先进入世界，选项会自动刷新，还有「刷新」按钮强制立即更新）。每个勾选的
+     计分项会在 `Score` 之后追加一列（第 3 列、第 4 列……），按**玩家名匹配**，
+     填入该玩家在对应计分项中的分数。
+     - 单人模式读取服务端完整计分板（含全部计分项）；多人服务器只能列出已同步到
+       客户端的计分项。
+   - 开启「只保留侧边栏显示的计分项」后，只导出侧边栏当前可见的行（受最大行数
+     限制，并排除隐藏行）。
+   - 用 `/boardcastmod export` 强制立即导出。
 
-2. **Scoreboard Overhaul style sidebar + OBS overlay compatibility**
-   - Replaces the vanilla sidebar renderer with a configurable one.
-   - Title, holder, score and background colours are editable in the config UI.
-   - Position, margins, min/max width, row height, max rows and text shadow are
-      configurable. Scoreboard Overhaul style 1K/1M compact values are optional.
-   - If `obs_overlay` / `obs-overlay` is installed, the native sidebar is
-     automatically hidden so OBS can draw the scoreboard itself without double
-     rendering. This can be disabled in the settings.
-   - `/boardcastmod sidebar hide|show|toggle` also controls sidebar visibility.
+2. **Scoreboard Overhaul 风格侧边栏 + OBS Overlay 兼容**
+   - 用可配置的渲染器替换原版侧边栏。
+   - 标题、持有者、分数和背景颜色均可在配置界面中编辑。
+   - 位置、边距、最小/最大宽度、行高、最大行数和文字阴影均可配置。
+     可选 Scoreboard Overhaul 风格的 1K/1M 数字缩写。
+   - 若安装了 `obs_overlay` / `obs-overlay`，会自动隐藏原生侧边栏，让 OBS 自行
+     绘制比分板以避免重复渲染（可在设置中关闭）。
+   - `/boardcastmod sidebar hide|show|toggle` 也可控制侧边栏可见性。
 
-3. **Health as hearts**
-   - Health objectives can be shown as hearts (`NUMBER`, `HEARTS`, `AUTO`).
-   - One heart equals 2 HP. Half hearts are supported:
-     - `ICONS`: full hearts are drawn in the full-heart colour; the last half
-       heart uses the half-heart colour.
-     - `NUMBER_WITH_HEART`: renders values such as `3.5 ♥`.
-   - AUTO enables hearts for the vanilla hearts render type or objectives whose
-     name/criterion contains `health`, `hp`, `heart`, `生命`, `血量`, `血`.
+3. **血量以心形显示**
+   - 血量计分项可以心形显示（`NUMBER` / `HEARTS` / `AUTO`）。
+   - 一颗心等于 2 HP，支持半颗心：
+     - `ICONS`：整颗心用整心颜色绘制，最后半颗心用半心颜色。
+     - `NUMBER_WITH_HEART`：显示类似 `3.5 ♥` 的值。
+   - `AUTO` 会对原版心形渲染类型，或名称 / 判据中包含 `health`、`hp`、
+     `heart`、`生命`、`血量`、`血` 的计分项启用心形。
 
-4. **Timer scoreboards**
-   - Timer objectives are detected by keywords (`timer`, `time`, `clock`,
-     `计时`, `倒计时`, `cd`) and by criterion name.
-   - The raw score is still exported to CSV every tick, so timer updates are
-     transmitted in real time.
-   - One-key switch to seconds: press **N** (configurable in vanilla controls)
-     or use `/boardcastmod timer seconds`.
-   - Supports raw ticks, decimal seconds (`12.5s`) and `mm:ss` clock format.
-   - If the server timer is already in seconds, disable "Timer source is ticks".
+4. **计时器比分板**
+   - 通过关键词（`timer`、`time`、`clock`、`计时`、`倒计时`、`cd`）和判据名称
+     识别计时器计分项。
+   - 原始分数仍会每个刻写入 CSV，因此计时器更新是实时传输的。
+   - 一键切换到秒：按 **N**（可在原版按键设置中修改），或使用
+     `/boardcastmod timer seconds`。
+   - 支持原始刻、小数秒（`12.5s`）和 `mm:ss` 时钟格式。
+   - 如果服务器计时器本身就是秒，请关闭「计时器源为刻」。
 
-5. **Client chat regex capture**
-   - Captures GAME/overlay messages, player chat, system messages and outgoing
-     chat input.
-   - If any configured Java regex matches (`Matcher.find`), the whole message
-     is appended to a txt file.
-   - Default pattern is `.*` (capture everything). Default output:
-     `.minecraft/config/boardcastmod/chat_capture.txt`.
-   - Timestamp, case-insensitivity and automatic file rotation are configurable.
+5. **客户端聊天正则抓取**
+   - 抓取 GAME/overlay 消息、玩家聊天、系统消息和发出的聊天输入。
+   - 只要任一配置的 Java 正则匹配（`Matcher.find`），整条消息就会被追加写入 txt 文件。
+   - 默认规则为 `.*`（抓取全部）。默认输出：
+     `.minecraft/config/boardcastmod/chat_capture.txt`。
+   - 时间戳、忽略大小写和自动文件轮换均可配置。
 
-## Settings UI
+## 设置界面
 
-- Uses **Cloth Config API** (required dependency).
-- Fully integrated with **ModMenu**: open Mods -> BoardcastMod -> settings.
-- Config file: `.minecraft/config/boardcastmod.json`.
+- 使用 **Cloth Config API**（必需依赖）。
+- 与 **ModMenu** 完全集成：打开「模组」→ BoardcastMod → 设置。
+- 配置文件：`.minecraft/config/boardcastmod.json`。
 
-## Commands
+## 命令
 
-| Command | Action |
+| 命令 | 作用 |
 | --- | --- |
-| `/boardcastmod export` / `csv` | Force scoreboard CSV export next tick |
-| `/boardcastmod sidebar hide` | Hide the native sidebar |
-| `/boardcastmod sidebar show` | Show the native sidebar |
-| `/boardcastmod sidebar toggle` | Toggle sidebar visibility |
-| `/boardcastmod timer seconds` | Toggle seconds mode for timer scoreboards |
-| `/boardcastmod timer clock` | Toggle `mm:ss` clock formatting |
+| `/boardcastmod export` / `csv` | 下一刻强制导出比分板 CSV |
+| `/boardcastmod sidebar hide` | 隐藏原生侧边栏 |
+| `/boardcastmod sidebar show` | 显示原生侧边栏 |
+| `/boardcastmod sidebar toggle` | 切换侧边栏可见性 |
+| `/boardcastmod timer seconds` | 切换计时器秒显示模式 |
+| `/boardcastmod timer clock` | 切换 `mm:ss` 时钟格式 |
 
-## Key bindings
+## 按键绑定
 
-- `N` — toggle timer seconds mode (category "BoardcastMod" in vanilla controls).
+- `N` — 切换计时器秒显示模式（原版按键设置中的「BoardcastMod」分类）。
 
-## Build
+## 构建
 
-Requires JDK 21. The wrapper uses Gradle 9.4.
+需要 JDK 21。构建脚本使用 Gradle 9.4。
 
-Windows:
+Windows：
 
 ```bat
 gradlew.bat build
 ```
 
-macOS / Linux:
+macOS / Linux：
 
 ```sh
 chmod +x gradlew
 ./gradlew build
 ```
 
-If the wrapper jar is missing, the scripts try to download it once. You can
-also open this folder directly in IntelliJ IDEA and use IDEA's Gradle import.
+如果 wrapper jar 缺失，脚本会尝试下载一次。也可以直接在 IntelliJ IDEA 中打开本
+目录，用 IDEA 的 Gradle 导入。
 
-The remapped jar is generated at `build/libs/BoardcastMod-1.0.0.jar`.
+重映射后的 jar 生成于 `build/libs/BoardcastMod-1.0.0.jar`。
 
-## Reference repositories
+## 参考仓库
 
-The mod combines concepts from Scoreboard Helper, Scoreboard Overhaul,
-zziger/obs-overlay and a chat regex logger. Clone helpers for the referenced
-repositories are available at `scripts/clone-reference-repos.bat` (Windows)
-and `scripts/clone-reference-repos.sh` (macOS/Linux).
+本模组合并了 Scoreboard Helper、Scoreboard Overhaul、zziger/obs-overlay 以及
+聊天正则记录器的思路。参考仓库的克隆脚本位于 `scripts/clone-reference-repos.bat`
+（Windows）和 `scripts/clone-reference-repos.sh`（macOS/Linux）。

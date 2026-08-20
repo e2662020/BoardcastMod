@@ -5,6 +5,7 @@ import com.rate.boardcastmod.command.ClientCommands;
 import com.rate.boardcastmod.config.BoardcastConfig;
 import com.rate.boardcastmod.config.FilePath;
 import com.rate.boardcastmod.config.FilePathGuiProvider;
+import com.rate.boardcastmod.config.ObjectiveMultiSelectGuiProvider;
 import com.rate.boardcastmod.export.ScoreboardExporter;
 import com.rate.boardcastmod.key.KeyBindings;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -25,6 +26,12 @@ public final class BoardcastMod implements ClientModInitializer {
         // Render a "Browse" button for every @FilePath option in the Cloth Config GUI.
         AutoConfig.getGuiRegistry(BoardcastConfig.class)
                 .registerAnnotationProvider(FilePathGuiProvider.INSTANCE, FilePath.class);
+
+        // "Extra columns from other objectives" is edited by ticking live-collected
+        // scoreboard objectives instead of typing names.
+        AutoConfig.getGuiRegistry(BoardcastConfig.class)
+                .registerPredicateProvider(ObjectiveMultiSelectGuiProvider.INSTANCE,
+                        field -> "exportExtraObjectives".equals(field.getName()));
 
         // Touch the config once so the file is created immediately.
         BoardcastConfig cfg = BoardcastMod.config();

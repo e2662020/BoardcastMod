@@ -26,28 +26,19 @@ public class BoardcastConfig implements ConfigData {
 
     @ConfigEntry.Category("export")
     @ConfigEntry.Gui.Tooltip
-    @FilePath
-    public String exportCsvPath = "config/boardcastmod/scoreboard.csv";
-
-    @ConfigEntry.Category("export")
-    @ConfigEntry.Gui.Tooltip
-    public boolean exportAllObjectives = true;
-
-    @ConfigEntry.Category("export")
-    @ConfigEntry.Gui.Tooltip
-    public boolean exportOnlySidebarEntries = true;
+    public boolean exportOnlySidebarEntries = false;
 
     @ConfigEntry.Category("export")
     public boolean exportIncludeHeader = true;
 
     @ConfigEntry.Category("export")
     @ConfigEntry.Gui.Tooltip
-    public boolean exportHelperCsv = true;
+    @FilePath
+    public String exportHelperCsvPath = "config/boardcastmod/scoreboard_helper.csv";
 
     @ConfigEntry.Category("export")
     @ConfigEntry.Gui.Tooltip
-    @FilePath
-    public String exportHelperCsvPath = "config/boardcastmod/scoreboard_helper.csv";
+    public List<String> exportExtraObjectives = new ArrayList<>();
 
     // ---------------------------------------------------------------------
     // Sidebar rendering (Scoreboard Overhaul style)
